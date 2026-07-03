@@ -5,9 +5,12 @@ FastAPI 应用入口
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import init_db, SessionLocal
-from app.api.v1 import auth_router, devices_router, inspection_router, analysis_router, templates_router, users_router
+from app.api.v1 import auth_router, devices_router, inspection_router, analysis_router, templates_router, users_router, reports_router
 from app.services.auth_service import init_admin_user
 from app.websocket.manager import manager
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.responses import JSONResponse
 import logging
 
 # 配置日志
@@ -42,6 +45,36 @@ app.include_router(inspection_router, prefix="/api/v1")
 app.include_router(analysis_router, prefix="/api/v1")
 app.include_router(templates_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
+app.include_router(reports_router, prefix="/api/v1")
+
+
+# 全局异常处理器
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail}
+    )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    errors = []
+    for error in exc.errors():
+        errors.append({
+            "field": ".".join([str(loc) for loc in error.get("loc", [])]),
+            "message": error.get("msg", "")
+        })
+    return JSONResponse(
+        status_code=422,
+        content={"detail": "参数校验失败", "errors": errors}
+    )
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "服务器内部错误"}
+    )
 
 
 @app.on_event("startup")

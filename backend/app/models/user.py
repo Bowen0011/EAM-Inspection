@@ -24,6 +24,7 @@ class User(Base):
     wechat_openid = Column(String(100), nullable=True, unique=True, comment="小程序登录唯一标识")
     is_active = Column(SmallInteger, nullable=False, default=1, comment="启用/禁用 1启用 0禁用")
     last_login_at = Column(DateTime, nullable=True, comment="最近登录时间")
+    must_change_password = Column(SmallInteger, nullable=False, default=0, comment="需要修改密码 1是 0否")
 
     def to_dict(self):
         return {
@@ -33,5 +34,6 @@ class User(Base):
             "real_name": self.real_name,
             "wechat_openid": self.wechat_openid,
             "is_active": self.is_active,
-            "last_login_at": self.last_login_at.isoformat() if self.last_login_at else None
+            "last_login_at": self.last_login_at.isoformat() if self.last_login_at else None,
+            "must_change_password": self.must_change_password
         }

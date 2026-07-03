@@ -26,6 +26,12 @@ class TokenResponse(BaseModel):
     role: str = Field(..., description="角色")
 
 
+class ChangePasswordRequest(BaseModel):
+    """修改密码请求"""
+    old_password: str = Field(..., min_length=6, description="旧密码")
+    new_password: str = Field(..., min_length=6, max_length=100, description="新密码")
+
+
 class UserInfoResponse(BaseModel):
     """用户信息响应"""
     id: int

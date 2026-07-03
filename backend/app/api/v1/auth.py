@@ -7,9 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.database import get_db
-from app.schemas.auth import LoginRequest, WechatLoginRequest, TokenResponse
-from app.services.auth_service import authenticate_user, create_user_token, handle_wechat_login
+from app.schemas.auth import LoginRequest, WechatLoginRequest, ChangePasswordRequest, TokenResponse
+from app.services.auth_service import authenticate_user, create_user_token, handle_wechat_login, verify_password, hash_password
 from app.utils.jwt_handler import verify_token
+from app.models.user import User
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional
 
@@ -75,6 +76,30 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
     user.last_login_at = func.now()
     db.commit()
     return create_user_token(user)
+
+
+@router.post("/change-password", summary="修改密码")
+def change_password(
+    request: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id)
+):
+    """
+    用户修改密码
+    需要提供旧密码验证，成功后清除 must_change_password 标记
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在")
+
+    if not verify_password(request.old_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="旧密码错误")
+
+    user.password_hash = hash_password(request.new_password)
+    user.must_change_password = 0
+    db.commit()
+
+    return {"message": "密码修改成功"}
 
 
 @router.post("/wechat_login", response_model=TokenResponse, summary="微信小程序登录")
