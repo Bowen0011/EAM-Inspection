@@ -131,8 +131,8 @@ def get_today_tasks(
     ).distinct().all()
     checked_set = {code[0] for code in checked_codes}
 
-    # 获取所有未点检设备
-    all_devices = db.query(Device).all()
+    # 获取所有未点检设备（过滤已退役设备）
+    all_devices = db.query(Device).filter(Device.is_deleted == 0).all()
     unchecked_devices = [
         device.to_dict() for device in all_devices
         if device.device_code not in checked_set

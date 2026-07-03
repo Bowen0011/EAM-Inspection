@@ -5,9 +5,11 @@ FastAPI 应用入口
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import init_db, SessionLocal
-from app.api.v1 import auth_router, devices_router, inspection_router, analysis_router, templates_router, users_router, reports_router
+from app.api.v1 import auth_router, devices_router, inspection_router, analysis_router, templates_router, users_router, reports_router, logs_router
 from app.services.auth_service import init_admin_user
 from app.websocket.manager import manager
+from app.services.log_service import log_operation
+from app.utils.jwt_handler import verify_token
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import JSONResponse
@@ -46,6 +48,7 @@ app.include_router(analysis_router, prefix="/api/v1")
 app.include_router(templates_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
 app.include_router(reports_router, prefix="/api/v1")
+app.include_router(logs_router, prefix="/api/v1")
 
 
 # 全局异常处理器
@@ -75,6 +78,51 @@ async def general_exception_handler(request, exc):
         status_code=500,
         content={"detail": "服务器内部错误"}
     )
+
+
+@app.middleware("http")
+async def operation_log_middleware(request, call_next):
+    """操作日志中间件 — 记录所有 POST/PUT/DELETE 请求"""
+    path = request.url.path
+    if not path.startswith("/api/v1/") or request.method == "GET":
+        return await call_next(request)
+
+    method = request.method
+    action_map = {"POST": "CREATE", "PUT": "UPDATE", "DELETE": "DELETE"}
+    action_type = action_map.get(method, method)
+    module = path.split("/")[3] if len(path.split("/")) > 3 else "unknown"
+
+    response = await call_next(request)
+
+    try:
+        auth_header = request.headers.get("authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+            payload = verify_token(token)
+            if payload and 200 <= response.status_code < 300:
+                user_id = int(payload.get("sub", 0))
+                username = payload.get("username", "")
+                # 提取操作目标（最后一段路径）
+                parts = path.split("/")
+                target = parts[-1] if len(parts) > 1 else ""
+
+                db = SessionLocal()
+                try:
+                    log_operation(
+                        db=db,
+                        operator_id=user_id,
+                        operator_name=username,
+                        action_type=action_type,
+                        module=module,
+                        target=target,
+                        ip_address=request.client.host if request.client else None
+                    )
+                finally:
+                    db.close()
+    except Exception:
+        pass
+
+    return response
 
 
 @app.on_event("startup")

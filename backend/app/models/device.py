@@ -2,7 +2,7 @@
 设备档案表 (devices)
 device_code 为全局唯一主键
 """
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, SmallInteger, ForeignKey
 from app.database import Base
 
 
@@ -14,6 +14,7 @@ class Device(Base):
     location = Column(String(200), nullable=False, comment="具体位置（车间/工位）")
     template_id = Column(Integer, ForeignKey("inspection_items.template_id"), nullable=False, comment="关联点检模板")
     qr_url = Column(String(500), nullable=True, comment="二维码图片访问地址")
+    is_deleted = Column(SmallInteger, nullable=False, default=0, comment="退役标记 0正常 1已退役")
 
     def to_dict(self):
         return {
@@ -21,5 +22,6 @@ class Device(Base):
             "device_name": self.device_name,
             "location": self.location,
             "template_id": self.template_id,
-            "qr_url": self.qr_url
+            "qr_url": self.qr_url,
+            "is_deleted": self.is_deleted
         }
