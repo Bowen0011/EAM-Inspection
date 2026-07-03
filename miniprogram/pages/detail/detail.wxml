@@ -34,8 +34,9 @@
     <text class="remark-text">{{detail.remark}}</text>
   </view>
 
-  <view class="section" wx:if="{{detail.engineer_remark}}">
-    <view class="section-title">工程师备注</view>
-    <text class="remark-text engineer">{{detail.engineer_remark}}</text>
+  <view class="section">
+    <view class="section-title">工程师意见</view>
+    <text class="remark-text engineer" wx:if="{{detail.engineer_remark}}">{{detail.engineer_remark}}</text>
+    <text class="remark-empty" wx:else>暂无工程师意见</text>
   </view>
 </view>

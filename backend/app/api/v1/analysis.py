@@ -94,6 +94,40 @@ def get_dashboard(
     }
 
 
+@router.get("/trend", summary="获取点检趋势数据")
+def get_trend(
+    days: int = 7,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user_role)
+):
+    """
+    获取指定天数内的点检完成率趋势
+    """
+    total_devices = db.query(func.count(Device.device_code)).scalar()
+    if total_devices == 0:
+        return {"dates": [], "completion_rates": []}
+
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    dates = []
+    rates = []
+
+    for i in range(days - 1, -1, -1):
+        day_start = today - timedelta(days=i)
+        day_end = day_start + timedelta(days=1)
+
+        checked_count = db.query(func.count(func.distinct(InspectionRecord.device_code))).filter(
+            InspectionRecord.check_time >= day_start,
+            InspectionRecord.check_time < day_end,
+            InspectionRecord.is_deleted == 0
+        ).scalar()
+
+        rate = round((checked_count / total_devices * 100), 1) if total_devices > 0 else 0
+        dates.append(day_start.strftime("%Y-%m-%d"))
+        rates.append(rate)
+
+    return {"dates": dates, "completion_rates": rates}
+
+
 @router.get("/export_excel", summary="导出周报/月报 Excel")
 def export_excel(
     start_date: str,

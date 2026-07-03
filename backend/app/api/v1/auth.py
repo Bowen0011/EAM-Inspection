@@ -5,6 +5,7 @@ POST /api/v1/auth/wechat_login  微信登录
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from app.database import get_db
 from app.schemas.auth import LoginRequest, WechatLoginRequest, TokenResponse
 from app.services.auth_service import authenticate_user, create_user_token, handle_wechat_login
@@ -66,6 +67,13 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
             detail="用户名或密码错误",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="账号已被禁用，请联系管理员"
+        )
+    user.last_login_at = func.now()
+    db.commit()
     return create_user_token(user)
 
 

@@ -3,7 +3,11 @@
     <view class="record-card" wx:for="{{records}}" wx:key="id" data-id="{{item.id}}" bindtap="onCardTap">
       <view class="card-row">
         <text class="device-name">{{item.device_name}}</text>
-        <text class="tag-{{item.result_status === 'pass' ? 'pass' : 'fail'}}">{{item.result_status === 'pass' ? '合格' : '异常'}}</text>
+        <view class="status-group">
+          <text class="tag-{{item.result_status === 'pass' ? 'pass' : 'fail'}}">{{item.result_status === 'pass' ? '合格' : '异常'}}</text>
+          <text class="badge-processed" wx:if="{{item.engineer_remark}}">已处理 ✓</text>
+          <text class="badge-pending" wx:elif="{{item.result_status === 'fail'}}">待处理 ⏳</text>
+        </view>
       </view>
       <view class="card-row">
         <text class="device-code">{{item.device_code}}</text>

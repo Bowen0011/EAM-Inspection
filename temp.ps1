@@ -1,1 +1,0 @@
-$s = \"<view class='container'>\" 

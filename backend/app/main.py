@@ -5,7 +5,7 @@ FastAPI 应用入口
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import init_db, SessionLocal
-from app.api.v1 import auth_router, devices_router, inspection_router, analysis_router
+from app.api.v1 import auth_router, devices_router, inspection_router, analysis_router, templates_router, users_router
 from app.services.auth_service import init_admin_user
 from app.websocket.manager import manager
 import logging
@@ -40,6 +40,8 @@ app.include_router(auth_router, prefix="/api/v1")
 app.include_router(devices_router, prefix="/api/v1")
 app.include_router(inspection_router, prefix="/api/v1")
 app.include_router(analysis_router, prefix="/api/v1")
+app.include_router(templates_router, prefix="/api/v1")
+app.include_router(users_router, prefix="/api/v1")
 
 
 @app.on_event("startup")
