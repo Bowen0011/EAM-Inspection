@@ -1,19 +1,12 @@
 <view class="page">
-  <!-- 顶部统计卡片 -->
   <view class="stats-card">
     <text class="stats-label">今日待点检</text>
     <text class="stats-number">{{taskCount}} 台</text>
   </view>
 
-  <!-- 设备列表 -->
   <scroll-view class="device-list" scroll-y>
-    <view
-      class="device-card"
-      wx:for="{{tasks}}"
-      wx:key="device_code"
-      data-device-code="{{item.device_code}}"
-      bindtap="onScanTap"
-    >
+    <view class="device-card" wx:for="{{tasks}}" wx:key="device_code"
+      data-device="{{item}}" bindtap="onDeviceTap">
       <view class="card-header">
         <text class="device-code">{{item.device_code}}</text>
       </view>
@@ -21,7 +14,6 @@
       <text class="device-location">{{item.location}}</text>
     </view>
 
-    <!-- 空状态 -->
     <view class="empty-tip" wx:if="{{tasks.length === 0}}">
       <text>暂无待点检设备</text>
     </view>
