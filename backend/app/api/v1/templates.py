@@ -4,14 +4,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from typing import List
 
 from app.database import get_db
 from app.models.inspection_template import InspectionTemplate
 from app.models.inspection_item import InspectionItem
 from app.models.device import Device
 from app.api.v1.auth import get_current_user_role
-from app.schemas.template import TemplateCreateRequest, TemplateListItemResponse
+from app.api.v1.deps import require_permission
+from app.schemas.template import TemplateCreateRequest
 
 router = APIRouter(prefix="/templates", tags=["模板管理"])
 
@@ -72,7 +72,7 @@ def get_template_detail(
 def create_template(
     request: TemplateCreateRequest,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user_role)
+    _: dict = Depends(require_permission("templates:create"))
 ):
     template = InspectionTemplate(
         template_name=request.template_name,
@@ -102,7 +102,7 @@ def update_template(
     template_id: int,
     request: TemplateCreateRequest,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user_role)
+    _: dict = Depends(require_permission("templates:edit"))
 ):
     template = db.query(InspectionTemplate).filter(
         InspectionTemplate.id == template_id,
@@ -137,7 +137,7 @@ def update_template(
 def delete_template(
     template_id: int,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user_role)
+    _: dict = Depends(require_permission("templates:delete"))
 ):
     template = db.query(InspectionTemplate).filter(
         InspectionTemplate.id == template_id,

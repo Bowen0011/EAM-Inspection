@@ -40,9 +40,13 @@ class Settings(BaseSettings):
     ADMIN_USERNAME: str = "admin"
     ADMIN_PASSWORD: str = "admin123456"
 
+    # .env 中存在的其他配置项
+    MYSQL_ROOT_PASSWORD: Optional[str] = None
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"
 
 
 settings = Settings()
