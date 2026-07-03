@@ -14,8 +14,19 @@ class Settings(BaseSettings):
     MYSQL_PASSWORD: str = "eam_pass_2024"
     MYSQL_DATABASE: str = "eam_inspection"
 
+    # SQLite 模式（本地开发/演示用）
+    USE_SQLITE: bool = False
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # 处理 .env 文件中字符串转 bool
+        if isinstance(self.USE_SQLITE, str):
+            self.USE_SQLITE = self.USE_SQLITE.lower() in ("true", "1", "yes")
+
     @property
     def DATABASE_URL(self) -> str:
+        if self.USE_SQLITE:
+            return "sqlite:///./eam_demo.db"
         return f"mysql+pymysql://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DATABASE}?charset=utf8mb4"
 
     # Redis 配置

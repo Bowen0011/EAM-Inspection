@@ -2,17 +2,27 @@
 数据库连接与会话管理
 """
 from sqlalchemy import create_engine
+from sqlalchemy.pool import NullPool
 from sqlalchemy.orm import sessionmaker, declarative_base
 from app.config import settings
 
-# 创建数据库引擎
-engine = create_engine(
-    settings.DATABASE_URL,
-    pool_size=10,
-    max_overflow=20,
-    pool_pre_ping=True,
-    echo=False
-)
+_connect_args = {}
+if settings.USE_SQLITE:
+    _connect_args = {"check_same_thread": False}
+    engine = create_engine(
+        settings.DATABASE_URL,
+        poolclass=NullPool,
+        connect_args=_connect_args,
+        echo=False
+    )
+else:
+    engine = create_engine(
+        settings.DATABASE_URL,
+        pool_size=10,
+        max_overflow=20,
+        pool_pre_ping=True,
+        echo=False
+    )
 
 # 创建会话工厂
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
