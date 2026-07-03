@@ -1,0 +1,101 @@
+<view class="page">
+  <!-- 顶部设备信息 -->
+  <view class="device-header">
+    <text class="device-code-text">{{deviceInfo.device_code}}</text>
+    <text class="device-name-text">{{deviceInfo.device_name}}</text>
+  </view>
+
+  <scroll-view class="form-body" scroll-y>
+    <!-- 动态渲染点检项目 -->
+    <view class="form-section">
+      <view class="section-title">点检项目</view>
+
+      <view class="form-item" wx:for="{{items}}" wx:key="id" wx:for-index="idx">
+        <!-- 数字类型 -->
+        <block wx:if="{{item.data_type === 'number'}}">
+          <view class="item-label">{{item.item_name}}</view>
+          <view class="input-group {{item.isError ? 'input-error' : ''}}">
+            <input
+              type="digit"
+              class="number-input"
+              value="{{item.value}}"
+              placeholder="请输入数值"
+              data-index="{{idx}}"
+              bindinput="onNumberInput"
+            />
+            <text class="unit-label">{{item.unit}}</text>
+          </view>
+          <text class="error-text" wx:if="{{item.isError}}">
+            ⚠ 标准值应在 {{item.standard_min}} ~ {{item.standard_max}} {{item.unit}} 之间
+          </text>
+          <text class="range-hint" wx:if="{{!item.isError}}">
+            标准范围：{{item.standard_min}} ~ {{item.standard_max}} {{item.unit}}
+          </text>
+        </block>
+
+        <!-- 布尔类型 -->
+        <block wx:elif="{{item.data_type === 'boolean'}}">
+          <view class="item-label">{{item.item_name}}</view>
+          <view class="switch-group">
+            <text class="switch-label {{item.value === 'true' ? 'active' : ''}}">正常</text>
+            <switch
+              checked="{{item.value === 'true'}}"
+              color="#1a73e8"
+              data-index="{{idx}}"
+              bindchange="onBooleanChange"
+            />
+            <text class="switch-label {{item.value === 'false' ? 'active' : ''}}">异常</text>
+          </view>
+        </block>
+
+        <!-- 文本类型 -->
+        <block wx:elif="{{item.data_type === 'text'}}">
+          <view class="item-label">{{item.item_name}}</view>
+          <textarea
+            class="text-input"
+            value="{{item.value}}"
+            placeholder="请输入描述"
+            data-index="{{idx}}"
+            bindinput="onTextInput"
+          />
+        </block>
+      </view>
+    </view>
+
+    <!-- 拍照区域 -->
+    <view class="form-section">
+      <view class="section-title">现场拍照</view>
+      <view class="photo-area">
+        <view class="photo-thumb" wx:for="{{photos}}" wx:key="*this">
+          <image class="thumb-img" src="{{item}}" mode="aspectFill" />
+        </view>
+        <view class="photo-btn" bindtap="onTakePhoto">
+          <text class="photo-btn-icon">📷</text>
+          <text class="photo-btn-text">现场拍照</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 异常原因（超标时必填） -->
+    <view class="form-section" wx:if="{{isAbnormal}}">
+      <view class="section-title">异常原因
+        <text class="required-star">*</text>
+      </view>
+      <textarea
+        class="remark-input"
+        value="{{remark}}"
+        placeholder="请填写异常原因（必填）"
+        bindinput="onRemarkInput"
+      />
+    </view>
+  </scroll-view>
+
+  <!-- 底部提交按钮 -->
+  <view class="submit-bar">
+    <button
+      class="btn-submit"
+      disabled="{{submitDisabled}}"
+      bindtap="onSubmit"
+    >提交点检</button>
+  </view>
+</view>

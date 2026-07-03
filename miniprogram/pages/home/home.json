@@ -1,0 +1,5 @@
+{
+    "navigationBarTitleText": "今日点检",
+    "enablePullDownRefresh": true,
+    "usingComponents": {}
+}

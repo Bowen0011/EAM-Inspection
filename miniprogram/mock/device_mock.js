@@ -92,12 +92,25 @@ const deviceMockData = [
 ];
 
 /**
+ * 工程师在后台为各技术员分配设备（技术员只有执行权限）
+ * 模拟工程师分配的映射关系
+ */
+const techDeviceAssignment = {
+    1: ["CSGZ-A01-DBC-01", "CSGZ-A01-DBC-02", "CSGZ-A02-WT-01", "CSGZ-A02-WT-02"],
+    2: ["CSGZ-A03-PT-01", "CSGZ-A03-PT-02", "CSGZ-A04-MMIT-01", "CSGZ-A05-CAT-01", "CSGZ-P01-AT-01"],
+    3: ["CSGZ-P05-MT-01", "CSGZ-S01-RSE-01", "CSGZ-S02-UT-01"]
+};
+
+/**
  * 今日待点检任务列表（模拟技术员视角）
- * 返回某技术员今日尚未点检的设备
+ * 技术员不感知分配逻辑，只接收工程师分配好的设备列表
+ * 前2台已点检，后几台未点检（模拟今日任务状态）
  */
 const getTodayTasks = (techId) => {
-    // 模拟返回所有未点检设备（前8台已点检，后4台未点检）
-    return deviceMockData.slice(8);
+    const assignedCodes = techDeviceAssignment[techId] || [];
+    const assignedDevices = deviceMockData.filter(d => assignedCodes.includes(d.device_code));
+    // 模拟：前2台已点检，剩余的为今日待点检
+    return assignedDevices.slice(2);
 };
 
 /**

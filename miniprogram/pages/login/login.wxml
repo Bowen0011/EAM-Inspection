@@ -1,0 +1,11 @@
+<view class="container">
+  <view class="header">
+    <text class="app-name">码上点检</text>
+  </view>
+  <view class="body">
+    <button class="login-btn" bindtap="onWechatLogin">微信一键登录</button>
+  </view>
+  <view class="footer">
+    <text class="version">V1.0</text>
+  </view>
+</view>

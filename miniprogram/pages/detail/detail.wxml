@@ -1,0 +1,41 @@
+<view class="page">
+  <view class="section">
+    <view class="header-row">
+      <text class="device-code">{{detail.device_code}}</text>
+      <text class="tag-{{detail.result_status === 'pass' ? 'pass' : 'fail'}}">{{detail.result_status === 'pass' ? '合格' : '异常'}}</text>
+    </view>
+    <text class="device-name">{{detail.device_name}}</text>
+    <text class="meta-row">点检时间：{{detail.check_time}}</text>
+    <text class="meta-row" wx:if="{{detail.gps_lat}}">GPS：{{detail.gps_lat}}, {{detail.gps_lng}}</text>
+  </view>
+
+  <view class="section">
+    <view class="section-title">点检项目</view>
+    <view class="item-row" wx:for="{{detail.items}}" wx:key="*this" wx:for-item="it">
+      <view class="item-left">
+        <text class="item-name">{{it.item_name}}</text>
+      </view>
+      <view class="item-right">
+        <text class="item-value {{it.is_abnormal ? 'abnormal' : ''}}">{{it.value}}</text>
+        <text class="abnormal-tag" wx:if="{{it.is_abnormal}}">异常</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{detail.photo_urls && detail.photo_urls.length > 0}}">
+    <view class="section-title">现场照片</view>
+    <view class="photo-list">
+      <image class="detail-photo" wx:for="{{detail.photo_urls}}" wx:key="*this" src="{{item}}" mode="aspectFill" />
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{detail.remark}}">
+    <view class="section-title">异常原因</view>
+    <text class="remark-text">{{detail.remark}}</text>
+  </view>
+
+  <view class="section" wx:if="{{detail.engineer_remark}}">
+    <view class="section-title">工程师备注</view>
+    <text class="remark-text engineer">{{detail.engineer_remark}}</text>
+  </view>
+</view>
